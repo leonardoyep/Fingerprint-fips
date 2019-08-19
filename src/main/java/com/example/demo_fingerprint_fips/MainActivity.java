@@ -3,11 +3,13 @@ package com.example.demo_fingerprint_fips;
 import android.app.KeyguardManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
@@ -28,6 +30,7 @@ import com.example.demo_fingerprint_fips.fragment.TemplateVerify;
 import com.rscja.deviceapi.FingerprintWithFIPS;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -49,6 +52,14 @@ public class MainActivity extends AppCompatActivity {
     private FragmentTabHost mTabHost;
     private FragmentManager fm;
     public  boolean   isPower=true;
+    public Intent goingBackToClient = new Intent();
+
+    public void GoingBackToClient(){
+        Toast.makeText(MainActivity.this, "Going BACKK", Toast.LENGTH_SHORT).show();
+        goingBackToClient = getPackageManager().getLaunchIntentForPackage("com.example.clientdatasender");
+        goingBackToClient.putExtra(Intent.EXTRA_TEXT,"Sending texdt");
+        startActivity(goingBackToClient);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +67,26 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"onCreate");
         setContentView(R.layout.activity_main);
         Toast.makeText(MainActivity.this, "Starting", Toast.LENGTH_LONG).show();
+
+        //RECEIVING DATA FROM CLIENT APP
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                handleSendText(intent); // Handle text being sent
+            } else if (type.startsWith("image/")) {
+                handleSendImage(intent); // Handle single image being sent
+            }
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                handleSendMultipleImages(intent); // Handle multiple images being sent
+            }
+        } else {
+            // Handle other intents, such as being started from the home screen
+        }
+
         initSound();
         initViewPageData();
         try {
@@ -206,6 +237,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         return super.onKeyDown(keyCode, event);
+    }
+
+    void handleSendText(Intent intent) {
+        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+        if (sharedText != null) {
+            Toast.makeText(MainActivity.this, "THIS IS THE TEXT: " + sharedText + " >>Works?<<", Toast.LENGTH_SHORT).show();
+            // Update UI to reflect text being shared
+        }
+    }
+
+    void handleSendImage(Intent intent) {
+        Uri imageUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri != null) {
+            // Update UI to reflect image being shared
+        }
+    }
+
+    void handleSendMultipleImages(Intent intent) {
+        ArrayList<Uri> imageUris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        if (imageUris != null) {
+            // Update UI to reflect multiple images being shared
+        }
     }
 
 }

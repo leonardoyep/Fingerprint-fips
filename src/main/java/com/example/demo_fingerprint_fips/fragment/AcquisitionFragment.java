@@ -13,6 +13,7 @@ import java.util.List;
 
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -58,6 +59,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 	Button btnEnroll;
 	Button EnrollStop;
 	Button btnPtCapture;
+	Button btnGoBackToClient; //dev by yep
 	Button btnPtCaptureStop;
 	TextView tvInfo,  tvVersion;
 	Button btnCleanAll;
@@ -90,6 +92,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 		EnrollStop = (Button) getView().findViewById(R.id.btnEnrollStop);
 		btnPtCapture = (Button) getView().findViewById(R.id.btnPtCapture);
 		btnPtCaptureStop = (Button) getView().findViewById(R.id.btnPtCaptureStop);
+		btnGoBackToClient = (Button) getView().findViewById(R.id.btnGoBackToClient);
 
 		tvInfo = (TextView) getView().findViewById(R.id.tvInfo);
 		tvVersion=(TextView) getView().findViewById(R.id.tvVersion);
@@ -103,6 +106,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 		EnrollStop.setOnClickListener(this);
 		btnPtCapture.setOnClickListener(this);
 		btnPtCaptureStop.setOnClickListener(this);
+		btnGoBackToClient.setOnClickListener(this);
 		mContext.mFingerprint.setEnrollCallBack(new EnrollBack());
 		mContext.mFingerprint.setIdentificationCallBack(new IdentificationBack());
         mContext.mFingerprint.setPtCaptureCallBack(new CaptureCallBack());
@@ -130,6 +134,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 				buff=null;
 				id=-1;
 				tvInfo.setText("");
+				Toast.makeText(mContext, "Lets capture the finger", Toast.LENGTH_SHORT).show();
 				mContext.mFingerprint.startIdentification();//采集之前先判断指纹是否存在
 				btnEnroll.setEnabled(false);
 				break;
@@ -149,6 +154,17 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 				break;
 			case R.id.btnPtCaptureStop:
                  mContext.mFingerprint.stopPtCapture();
+				break;
+			case R.id.btnGoBackToClient:
+				Toast.makeText(mContext, "Going back to client app-1", Toast.LENGTH_SHORT).show();
+				Intent goingBackToClient = new Intent();
+				String name = "userBack";
+				goingBackToClient.setAction(Intent.ACTION_SEND);
+				goingBackToClient.putExtra(Intent.EXTRA_TEXT, "NOMBRE: " + name);
+				goingBackToClient.setType("text/plain");
+				startActivity(goingBackToClient);
+
+				//mContext.GoingBackToClient();
 				break;
 		}
 	}
@@ -235,7 +251,7 @@ public class AcquisitionFragment extends KeyDwonFragment  implements  OnClickLis
 			public void onComplete(boolean result, int id,int failuerCode) {
 				Log.i(TAG, "failuerCode="+failuerCode);
 				if (result) {
-					setMsg("Fingerprint ID:" + id);
+					setMsg("Fingerprint number ID:" + id);
 				} else {
 					if(failuerCode==RESULT_STATUS_NO_MATCH){ //指纹不存在
 						mContext.mFingerprint.startEnroll();
